@@ -1,4 +1,13 @@
 <template>
+  <div v-if="gagnant" class="resultat">
+    <div> Le gagnant est {{ gagnant }}</div>
+    <div class="btt" @click="relance" @keydown="key">nouvelle partie</div>
+  </div>
+  <nav>
+    <h1 class="title">
+      Morpion
+    </h1>
+  </nav>
 
   <div class="morpion">
     <div class="box" @click="boxselected(1)" @keydown="key">{{ note[1] }}</div>
@@ -11,70 +20,97 @@
     <div class="box" @click="boxselected(7)" @keydown="key">{{ note[7] }}</div>
     <div class="box" @click="boxselected(8)" @keydown="key">{{ note[8] }}</div>
   </div>
-  <button class="btt" @click="relance">nouvelle partie</button>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue';
 
-const note = ref(['x', '', '', '', '', '', '', '', '']);
-
+const note = ref(['', '', '', '', '', '', '', '', '']);
 const result = ref([
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
+  [0, 1, 2], // Ligne 1 horizontale
+  [3, 4, 5], // Ligne 2 horizontale
+  [6, 7, 8], // Ligne 3 horizontale
+  [0, 3, 6], // Colonne 1 verticale
+  [1, 4, 7], // Colonne 2 verticale
+  [2, 5, 8], // Colonne 3 verticale
+  [0, 4, 8], // Diagonale principale
+  [2, 4, 6], // Diagonale secondaire
 ]);
 
 const notetotal = ['X', 'O'];
 const nbn = ref(0);
 const noteDejaSelectionner = ref([]);
+const gagnant = ref(null);
 
 const boxselected = (n) => {
-  // for (const [a, b, c] of result.value) {
-  //   if ([a]) {
-  //     if ([a] === [b] === [c]) {
-  //       alert('test');
-  //     }
-  //   }
-  // }
-
-  result.value.forEach((e) => {
-    console.log(e);
-    const a = e[0];
-    const b = e[1];
-    const c = e[2];
-  });
+  // Vérifiez si la case est déjà sélectionnée
   if (noteDejaSelectionner.value.includes(n)) {
     return;
   }
+
+  // Ajoutez la case sélectionnée et mettez à jour le plateau
   noteDejaSelectionner.value.push(n);
   const nouvelleNote = notetotal[nbn.value];
   note.value.splice(n, 1, nouvelleNote);
-  note[n] = notetotal[nbn];
-  console.log(note.value);
-  if (nbn.value === 1) {
-    nbn.value = 0;
-    return;
-  }
-  nbn.value += 1;
-  console.log(nbn.value);
+
+  // Vérifiez si un joueur a gagné
+  const isGagnant = result.value.some(([a, b, c]) => {
+    if (note.value[a] && note.value[a] === note.value[b] && note.value[a] === note.value[c]) {
+      gagnant.value = note.value[a];
+      return true;
+    }
+    return false;
+  });
+
+  if (isGagnant) return;
+
+  // Changement de joueur
+  nbn.value = nbn.value === 1 ? 0 : 1;
 };
 
+// Fonction pour relancer le jeu
 const relance = () => {
   note.value = ['', '', '', '', '', '', '', '', ''];
   noteDejaSelectionner.value = [];
   nbn.value = 0;
+  gagnant.value = null;
 };
 </script>
 
 <style>
 * {
   box-sizing: border-box;
+  margin: 0;
+}
+
+.resultat {
+  display: flex;
+  position: absolute;
+  top: 20%;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.74);
+  width: 100vw;
+  height: 100px;
+  margin: 0;
+  padding: 100px;
+  gap: 20px;
+  color: whitesmoke;
+  font-size: large;
+  font-family: cursive;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+
+  .title {
+    color: black;
+    margin-top: 50px;
+    font-size: xx-large;
+    font-family: cursive;
+  }
 }
 
 .morpion {
@@ -103,13 +139,13 @@ const relance = () => {
 }
 
 .btt {
-  display: flex;
-  margin: auto;
-  margin-top: 100px;
-  width: 150px;
-  height: 50px;
   justify-content: center;
   align-items: center;
-
+  cursor: pointer;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 15px;
+  background-color: whitesmoke;
+  color: black;
 }
 </style>
